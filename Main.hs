@@ -1,13 +1,14 @@
 import Text.Printf (printf)
 import System.Environment
 import System.IO
+import Data.Char(toLower)
 
 main :: IO ()
 main = do
     args <- getArgs
     case args of
         [] -> putStrLn "No string provided"
-        x -> printf "%s\n" $ concrypt $ concat x
+        x -> printf "%s\n" $ concrypt $ map toLower $ concat x
 
 concrypt :: String -> String
 concrypt x = unwords a ++ "\n" ++ unwords b ++ "\n" ++ unwords c
