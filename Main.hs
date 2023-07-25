@@ -7,8 +7,7 @@ main = do
     args <- getArgs
     case args of
         [] -> putStrLn "No string provided"
-        [inStr] -> printf "%s\n" $ concrypt inStr
-        _ -> putStrLn "Too many arguments"
+        x -> printf "%s\n" $ concrypt $ concat x
 
 concrypt :: String -> String
 concrypt x = unwords a ++ "\n" ++ unwords b ++ "\n" ++ unwords c
@@ -97,6 +96,6 @@ encryptLetter 'ä' = (   "+---+",
 encryptLetter 'ö' = (   "+----",
                         "| *  ",
                         "|   *")
-encryptLetter x = (     "+---+",
-                        "| " ++ [x] ++ " |",
-                        "+---+")
+encryptLetter x = (     "     ",
+                        "  " ++ [x] ++ "  ",
+                        "     ")
