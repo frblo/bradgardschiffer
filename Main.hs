@@ -1,6 +1,5 @@
 import Text.Printf (printf)
-import System.Environment
-import System.IO
+import System.Environment ( getArgs )
 import Data.Char(toLower)
 
 main :: IO ()
