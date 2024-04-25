@@ -13,13 +13,13 @@ struct Args {
 
     #[arg(short, long)]
     filename: Option<String>,
+
+    #[arg(short, long, action)]
+    png: bool,
 }
 
 fn main() {
-    let _args = Args::parse();
+    let args = Args::parse();
 
-    match _args.alphabet {
-        Some(alpb) => cipherer::encipher(_args.input.to_uppercase(), alpb),
-        None => cipherer::std_encipher(_args.input.to_uppercase())
-    };
+    cipherer::encipher(args.input.to_uppercase(), args.alphabet, args.filename)
 }
