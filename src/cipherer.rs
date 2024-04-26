@@ -17,22 +17,24 @@ enum Wall {
     Left,
 }
 
-pub fn encipher(input: String, alpb: Option<String>, filename: Option<String>) {
-    let mut alphabet: HashMap<char, usize> = match &alpb {
+pub fn encipher(input: String, alph: Option<String>, filename: Option<String>) {
+    let mut alphabet: HashMap<char, usize> = match &alph {
         Some(a) => HashMap::with_capacity(a.graphemes(true).count()),
         None => HashMap::with_capacity(27) // Standard alphabet
     };
-    match alpb {
-        Some(a) => {
-            for (i, c) in a.chars().enumerate() {
-                alphabet.insert(c, i);
-            }
-        },
-        None => { // Standard alphabet with 'w' and 'q' missing.
-            for (i, c) in "ABCDEFGHIJKLMNOPRSTUVXYZÅÄÖ".chars().enumerate() {
-                alphabet.insert(c, i);
-            }
+
+    let alphabet_adder = |alph: String, alphabet: &mut HashMap<char, usize>| {
+        for (i, c) in alph.chars().enumerate() {
+            match alphabet.get(&c) {
+                Some(_) => panic!("Char {} already exists in alphabet", c),
+                None => alphabet.insert(c, i)                
+            };
         }
+    };
+
+    match alph {
+        Some(a) => alphabet_adder(a, &mut alphabet),
+        None => alphabet_adder("ABCDEFGHIJKLMNOPRSTUVXYZÅÄÖ".to_owned(), &mut alphabet),
     }
     if alphabet.len() > 81 {panic!("Too many characters in alphabet, max 81.")}
 
@@ -43,21 +45,26 @@ pub fn encipher(input: String, alpb: Option<String>, filename: Option<String>) {
         }
     }
 
-    // Set up svg file
-    let mut svg = match filename {
-        Some(f) => BufWriter::new(File::create(format!("{}.svg", f))
-            .expect("Failed to create svg")),
-        None => BufWriter::new(File::create("ciphed.svg")
-            .expect("Failed to create svg"))
+    let f = match filename {
+        Some(x) => x,
+        None => "ciphed".to_owned(),
     };
+
+    encipherer(input, &mut alphabet, f);
+}
+
+fn encipherer(input: String, alphabet: &mut HashMap<char, usize>, filename: String) {
+    // Set up svg file
+    let mut svg = BufWriter::new(File::create(format!("{}.svg", filename))
+        .expect("Failed to create svg"));
     
     svg.write(format!("<svg width=\"{}\" height=\"500\" xmlns=\"http://www.w3.org/2000/svg\">\n",
-            input.graphemes(true).count() * 500)
+        input.graphemes(true).count() * 500)
         .as_bytes())
         .expect("Failed to write to svg file");
 
     for (i, c) in input.chars().enumerate() {
-        let bg: Brädgård = brädgård_builder(c, &mut alphabet);
+        let bg: Brädgård = brädgård_builder(c, alphabet);
 
         draw_brädgård(i, bg, &mut svg);
     }
@@ -68,7 +75,7 @@ pub fn encipher(input: String, alpb: Option<String>, filename: Option<String>) {
 fn brädgård_builder(c: char, alphabet: &mut HashMap<char, usize>) -> Brädgård {
     let pos_a: usize = *alphabet.get(&c).unwrap(); // already checked
 
-    fn bg_walls(pos: usize) -> Vec<Wall> {
+    let bg_walls = |pos: usize| -> Vec<Wall> {
         let mut walls: Vec<Wall> = Vec::with_capacity(4);
         if pos >= 3 {walls.push(Wall::Top);}
         if pos <= 5 {walls.push(Wall::Bottom);}
@@ -76,7 +83,7 @@ fn brädgård_builder(c: char, alphabet: &mut HashMap<char, usize>) -> Brädgår
         if [1, 2, 4, 5, 7, 8].contains(&pos) {walls.push(Wall::Left);}
 
         return walls;
-    }
+    };
 
     return Brädgård {
         dots: pos_a / 9,
